@@ -5,19 +5,19 @@ import numpy as np
 
 
 def get_gapped_kmer_embedding_filters_and_func(
-        kmer_len, alphabet, num_gaps, num_mismatches):
+        kmer_len, alphabet, num_gaps, max_mismatches):
     filters, biases, string_reps = prep_filters_and_biases(
                                     kmer_len=kmer_len,
                                     alphabet=alphabet,
                                     num_gaps=num_gaps,
-                                    num_mismatches=num_mismatches) 
+                                    max_mismatches=max_mismatches) 
     func = B.get_gapped_kmer_embedding_func(filters=filters, biases=biases)
-    return string_reps, func
+    return filters, string_reps, func
 
 
 #prepare filters and biases for scanning strings with conv filters
 def prep_filters_and_biases(kmer_len, alphabet,
-                            num_gaps, num_mismatches):
+                            num_gaps, max_mismatches):
     #given the number of gaps and the kmer length,
     #find all unique combinations of positions
     #in the filter that are nonzero (nonzero = not a gap)
@@ -63,7 +63,7 @@ def prep_filters_and_biases(kmer_len, alphabet,
                     the_filter[nonzero_position, letter] = 1 
                     filter_string_rep[nonzero_position] = alphabet[letter]
                 filters.append(the_filter)
-                biases.append(-(len(nonzero_positions)-1-num_mismatches))
+                biases.append(-(len(nonzero_positions)-1-max_mismatches))
                 filter_string_reps.append("".join(filter_string_rep))
     return np.array(filters), np.array(biases), filter_string_reps 
     

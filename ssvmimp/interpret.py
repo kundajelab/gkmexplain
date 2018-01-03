@@ -1,5 +1,7 @@
 from __future__ import absolute_import, division, print_function
 from collections import OrderedDict
+import numpy as np
+import sys
 
 
 def get_filter_matches(kmer_string, filter_strings, max_mismatches):
@@ -54,7 +56,8 @@ def get_total_kmer_score(kmer_string, filter_to_score, max_mismatches):
     return total_score
 
 
-def get_filter_imp_mats(filters, scores, max_mismatches):
+def get_filter_imp_mats(filters, scores, max_mismatches,
+                        progress_update=500):
     """Get filters that can be used to assign importance to individual bases
     """
     assert len(filters.shape)==3
@@ -74,22 +77,28 @@ def get_filter_imp_mats(filters, scores, max_mismatches):
     # the filter is divided by the number of positions in filter1
     # that matched up and is assigned evenly to those positions
 
-    for filter1, filter1_gap_vector in zip(filters, filter_gap_vectors):
+    for filter_idx, (filter1, filter1_gap_vector) in\
+        enumerate(zip(filters, filter_gap_vectors)):
+        if (filter_idx%progress_update == 0):
+            print("On filter index:",filter_idx)
+            sys.stdout.flush()
+
         filter1_imp_mat = np.zeros_like(filter1)
         num_nongap_positions = np.sum(filter1_gap_vector)
         for (filter2, filter2_gap_vector, filter2_score)\
             in zip(filters, filter_gap_vectors, scores):
             #only compare to other filters where the gaps are in the same spot
             if (all(filter1_gap_vector==filter2_gap_vector)):
-                match_spots = np.max(filter1==filter2,axis=1)
+                match_spots = np.max((filter1==filter2)*filter1,axis=1)
                 #if the number of mismatches is <= target number, the
                 #two filters are compatible
                 num_matches = np.sum(match_spots)
                 num_mismatches = num_nongap_positions - num_matches
                 if (num_mismatches <= max_mismatches):
                     per_pos_imp = filter2_score/num_matches
-                    filter1_imp_mat +=\
-                        (filter1*match_spots[:,None])*per_pos_imp
+                    to_add = (filter1*match_spots[:,None])*per_pos_imp
+                    filter1_imp_mat += to_add
+                    
         filter_imp_mats.append(filter1_imp_mat) 
 
     filter_imp_mats = np.array(filter_imp_mats)

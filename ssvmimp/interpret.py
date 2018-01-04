@@ -104,3 +104,62 @@ def get_filter_imp_mats(filters, scores, max_mismatches,
     filter_imp_mats = np.array(filter_imp_mats)
 
     return filter_imp_mats
+
+
+def get_filter_mutation_effects(filters, filter_imp_mats):
+    """
+    For each filter and corresponding filter importance matrix,\
+        get a filter that represents the relative impact of making\
+        single mutations at particular positions
+
+    Arguments:
+        filter_contribs: the total importance contributed by an exact match\
+            to the filter, including mismatches 
+    """
+    assert len(filters.shape)==3
+    assert filters.shape==filter_imp_mats.shape
+    assert np.max(np.sum(np.abs(filters),axis=-1))==1 #no col has over one 1
+    assert np.min(filters)==0 #min value is 0
+
+    filter_contribs = np.sum(filter_imp_mats, axis=(1,2))
+
+    #for each filter, find an id by treating the ones as digits in a number
+    #in base (filters.shape[-1]+1)
+    place_values = np.array([(filters.shape[2]+1)**i for
+                             i in range(filters.shape[1])])
+    filter_digit_vecs = (np.argmax(filters,axis=-1)+1)*np.max(filters,axis=-1)
+    filter_id_to_contrib = dict([
+        (np.sum(place_values*filter_digit_vec), filter_contrib)
+        for (a_filter, filter_digit_vec, filter_contrib)
+        in zip(filters, filter_digit_vecs, filter_contribs)])
+
+    filter_mutation_effect_mats = []
+    for a_filter, filter_digit_vec, filter_imp_mat, filter_contrib in\
+        zip(filters, filter_digit_vecs, filter_imp_mats, filter_contribs):
+
+        filter_mutation_effect_mat = np.array(filter_imp_mat)
+        assert len(filter_mutation_effect_mat.shape) == 2
+
+        #get the nongap positions
+        nonzero_positions = np.nonzero(np.max(a_filter, axis=-1))[0]
+        #iterate over the nongap positions
+        for nonzero_position in nonzero_positions:
+            original_letter_idx = int(filter_digit_vec[nonzero_position]-1)
+            #iterate over all the possible letters at that position
+            for letter_idx in range(a_filter.shape[1]):
+                #if the letter under consideration is a proposed mutation
+                #(i.e. it's not the letter that's already there)
+                if letter_idx != original_letter_idx:
+                    new_filter_digit_vec = np.array(filter_digit_vec)
+                    new_filter_digit_vec[nonzero_position] = letter_idx+1
+                    new_filter_id = np.sum(place_values*new_filter_digit_vec)
+                    new_filter_contrib = filter_id_to_contrib[new_filter_id]
+
+                    delta = ((new_filter_contrib-filter_contrib)+
+                             (filter_imp_mat[nonzero_position,
+                                             original_letter_idx]))
+                    filter_mutation_effect_mat[nonzero_position,
+                                               letter_idx] = delta 
+        filter_mutation_effect_mats.append(filter_mutation_effect_mat)
+    return np.array(filter_mutation_effect_mats)
+

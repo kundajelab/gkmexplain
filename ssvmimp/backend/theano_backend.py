@@ -79,8 +79,6 @@ def get_interpretation_func(filters, filter_imp_mats):
     assert len(filters.shape)==3
     assert filters.shape==filter_imp_mats.shape
     
-    total_filter_weight = np.sum(filter_imp_mats, axis=(1,2))
-
     #figure out the bias for an exact match to each filter
     biases = -(np.sum(np.max(filters, axis=-1),axis=-1)-1)
     onehot_var = T.TensorType(dtype=theano.config.floatX,
@@ -98,10 +96,9 @@ def get_interpretation_func(filters, filter_imp_mats):
     normalized_match_counts = (match_counts/
         (T.sqrt(T.sum(match_counts*match_counts,axis=1))[:,None]))
 
-    per_seq_filter_imp = (normalized_match_counts*total_filter_weight[None,:])
     #pseudocount the denominator to avoid nans
-    per_match_imp = per_seq_filter_imp/(match_counts + 0.01*(match_counts<1.0))
-    filter_exact_match_imp = filter_exact_matches*per_match_imp[:,:,None]
+    per_match_norm = normalized_match_counts/(match_counts + 0.01*(match_counts<1.0))
+    filter_exact_match_imp = filter_exact_matches*per_match_norm[:,:,None]
 
     #get the inverse of the filter importance mats; will have the
     #shape of inv_filter_imp_mats is alphabet_size x num_filt x len
@@ -117,6 +114,7 @@ def get_interpretation_func(filters, filter_imp_mats):
         input=filter_exact_match_imp[:,:,:,None],
         filters=theano_inv_filters[:,:,::-1,None],
         border_mode='full')[:,:,:,0] 
+    importance_scores = importance_scores.transpose(0,2,1)
 
     func = theano.function([onehot_var], importance_scores,
                             allow_input_downcast=True)

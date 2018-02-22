@@ -3,11 +3,13 @@ import numpy as np
 from scipy import linalg
 from sklearn.neighbors import NearestNeighbors
 import time
+import math
 
 
 class ImportanceScoresHelper(object):
-    def __init__(self, svmclassifier, points, labels):
+    def __init__(self, svmclassifier, gamma, points, labels):
         self.clf = svmclassifier
+	self.gamma = gamma
         self.points = points
         self.labels = labels
         self.nn_initialized = False
@@ -82,8 +84,8 @@ class ImportanceScoresHelper(object):
 
     def get_reference_points_from_closest_opposite_points(self, testpoints):
         opposite_points = self.get_closest_opposite_points(testpoints)
-        vfunc = np.vectorize(self.get_reference_point_from_closest_opposite_point, signature='(n),(n)->(n)')
-        to_return = vfunc(testpoints, opposite_points)
+	to_return = np.array([self.get_reference_point_from_closest_opposite_point(testpoints[i], opposite_points[i])
+			     for i in range(testpoints.shape[0])])
         return to_return
 
     def one_dimension_gradient(self, testpoint, dimension, delta):
@@ -94,23 +96,40 @@ class ImportanceScoresHelper(object):
     def get_gradient(self, testpoint, delta=0.001):
         return [self.one_dimension_gradient(testpoint, i, delta) for i in range(testpoint.shape[0])]
 
+    def functional_margin(self, testpoint):
+	# Each term in the sum is alpha_i*y_i* e**(-gamma*(norm(ith_support_vector - testpoint))**2) + b
+        return np.sum(np.array([self.clf.dual_coef_[0][i]
+                        *math.exp(-1.0*self.gamma
+                                *math.pow(linalg.norm(self.clf.support_vectors_[i]-testpoint),2)
+                                 )
+                        for i in range(self.clf.support_vectors_.shape[0])
+                        ])
+                     ) + self.clf.intercept_[0]
+
+
+    def get_one_dimension_analytic_gradient(self, testpoint, j):
+	# Each term in the sum is alpha_i*y_i*2*gamma*(jth_dimension_of_ith_support_vector - jth_dimension_of_test_point)
+        # * e**(-gamma*(norm(ith_support_vector - testpoint))**2)
+	return np.sum(np.array([self.clf.dual_coef_[0][i]
+			*2.0*self.gamma
+			*(self.clf.support_vectors_[i][j] - testpoint[j])
+			*math.exp(-1.0*self.gamma
+				*math.pow(linalg.norm(self.clf.support_vectors_[i]-testpoint),2)
+				 )
+			for i in range(self.clf.support_vectors_.shape[0])
+			])
+		     )
+
+    def get_analytic_gradient(self, testpoint):
+	return np.array([self.get_one_dimension_analytic_gradient(testpoint,j) for j in range(testpoint.shape[0])])
+	
     def get_average_gradient_between_two_points(self, frompoint, topoint, numsteps):
         distance = linalg.norm(topoint - frompoint)
         unit = (topoint - frompoint)/distance
         waypoints = np.linspace(0, distance, numsteps)
-        return np.average([self.get_gradient(frompoint + waypoints[i]*unit) for i in range(numsteps)], axis=0)
+        return np.average([self.get_analytic_gradient(frompoint + waypoints[i]*unit) for i in range(numsteps)], axis=0)
 
     def get_average_gradient_between_points(self, frompoints, topoints, numsteps):
-        start = time.time()
-        vfunc = np.vectorize(
-                    lambda x,y: self.get_average_gradient_between_two_points(
-                        frompoint=x, topoint=y, numsteps=numsteps),
-                        signature='(n),(n)->(n)')
-        to_return = vfunc(frompoints, topoints)
-        print("Avg grad computed in:",round(time.time()-start,2),"s")
-        return to_return
-
-    def get_average_gradient_between_points_novec(self, frompoints, topoints, numsteps):
         start = time.time()
         to_return = np.array([self.get_average_gradient_between_two_points(
                         frompoint=x,topoint=y,numsteps=numsteps)

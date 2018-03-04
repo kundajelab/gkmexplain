@@ -4,7 +4,7 @@ import os
 from pkg_resources import resource_filename
 
 
-LOG_FACTORIAL_PATH = resource_filename('ssvmimp.stats', 'logFactorial_3000.txt')
+LOG_FACTORIAL_PATH = resource_filename('ssvmimp.stats', 'logFactorial_30000.txt')
 
 LOG_FACTORIAL_THRESHOLD = 1000; #the threshold at which approximations using logarhythms kick in.
 
@@ -46,7 +46,7 @@ def updateLogProductAndProduct(i,logProduct,product):
 
 def readLogFactorialFile(inputFile=None):
     if (inputFile is None):
-        inputFile = "logFactorial_30000.txt";
+        inputFile = LOG_FACTORIAL_PATH; 
     return [float(x.rstrip()) for x in open(inputFile)]
 
 

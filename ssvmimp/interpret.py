@@ -106,6 +106,37 @@ def get_filter_imp_mats(filters, scores, max_mismatches,
     return filter_imp_mats
 
 
+def get_per_base_filter_contrib_nomismatch(filters):
+    """Get filters that can be used to assign importance to individual bases
+    Assumes total filter importance is 1. Does not tolerate mismatches
+    """
+    assert len(filters.shape)==3
+    #filter_gap_vectors are vectors representing where the gaps are
+    filter_gap_vectors = np.sum(filters, axis=2)
+
+    filter_imp_mats = []
+
+    #For each filter (denoted filter1), we ask the question:
+    # "if the underlying sequence is an exact match to filter1,
+    # then which other filters that have
+    # gaps in the same locations will also be matched if allowing
+    # for max_mismatches?". We can then think of filter1
+    # as "acquiring" the importance of all those other filters. For each
+    # filter that filter1 is a match to, the total importance of
+    # the filter is divided by the number of positions in filter1
+    # that matched up and is assigned evenly to those positions
+
+    for filter_idx, (filter1, filter1_gap_vector) in\
+        enumerate(zip(filters, filter_gap_vectors)):
+        filter1_imp_mat = filter1/np.sum(filter1)
+        num_nongap_positions = np.sum(filter1_gap_vector)
+        filter_imp_mats.append(filter1_imp_mat) 
+
+    filter_imp_mats = np.array(filter_imp_mats)
+
+    return filter_imp_mats
+
+
 def get_filter_mutation_effects(filters, filter_imp_mats):
     """
     For each filter and corresponding filter importance matrix,\

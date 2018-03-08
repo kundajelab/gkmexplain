@@ -3,6 +3,7 @@ import theano
 from theano import tensor as T
 import numpy as np
 import sys
+from .. import interpret
 
 
 def run_function_in_batches(func,
@@ -65,6 +66,66 @@ def get_gapped_kmer_embedding_func(filters, biases):
         return np.array(run_function_in_batches(
                             func=func,
                             input_data_list=[onehot],
+                            batch_size=batch_size,
+                            progress_update=progress_update))
+    return batchwise_func
+
+
+def get_interpretation_func_dynamic_filter_imp(filters):
+
+    filters = filters.astype("float32")
+    filter_imp_mats = (interpret.get_per_base_filter_contrib_nomismatch(
+                                 filters=filters)).astype("float32")
+
+    #filters has the shape: num_filt x len x alphabet_size
+    assert len(filters.shape)==3
+    assert filters.shape==filter_imp_mats.shape
+    
+    #figure out the bias for an exact match to each filter
+    biases = -(np.sum(np.max(filters, axis=-1),axis=-1)-1)
+    onehot_var = T.TensorType(dtype=theano.config.floatX,
+                                    broadcastable=[False]*3)("onehot")
+    filter_imp_var = T.TensorType(dtype=theano.config.floatX,
+                                  broadcastable=[False]*2)("filter_imp_var")
+    theano_filters = T.as_tensor_variable(
+                      x=filters, name="filters")
+    theano_biases = T.as_tensor_variable(x=biases, name="biases")
+
+    filter_exact_matches = 1.0*((T.nnet.conv.conv2d(
+        input=onehot_var[:,None,:,:],
+        filters=theano_filters[:,None,::-1,::-1],
+        border_mode='valid')[:,:,:,0] + biases[None,:,None])
+        > 0.0)
+    match_counts = T.sum(filter_exact_matches, axis=2)
+    #pseudocount the denominator to avoid nans
+    per_match_imp = (filter_imp_var/\
+                     (match_counts + 0.01*(match_counts<1.0)))
+    filter_exact_match_imp = filter_exact_matches*per_match_imp[:,:,None]
+
+    #get the inverse of the filter importance mats; will have the
+    #shape of inv_filter_imp_mats is alphabet_size x num_filt x len
+    #note that the last axis is reversed deliberately
+    inv_filter_imp_mats = filter_imp_mats.transpose(2,0,1)[:,:,::-1]
+
+    theano_inv_filters = T.as_tensor_variable(
+                            x=inv_filter_imp_mats, name="inv_filters")
+
+    #border_mode='full' will apply the filter wherever it partially overlaps,
+    #which is what we need to reconstruct our original input size.
+    importance_scores = T.nnet.conv.conv2d(
+        input=filter_exact_match_imp[:,:,:,None],
+        filters=theano_inv_filters[:,:,::-1,None],
+        border_mode='full')[:,:,:,0] 
+    importance_scores = importance_scores.transpose(0,2,1)
+
+    func = theano.function([onehot_var, filter_imp_var],
+                            importance_scores,
+                            allow_input_downcast=True)
+
+    def batchwise_func(onehot, filter_imp, batch_size, progress_update):
+        return np.array(run_function_in_batches(
+                            func=func,
+                            input_data_list=[onehot, filter_imp],
                             batch_size=batch_size,
                             progress_update=progress_update))
     return batchwise_func

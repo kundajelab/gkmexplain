@@ -83,7 +83,8 @@ class ImportanceScoresHelper(object):
         endpoint = np.copy(oppositepoint)
     #Added second condition "linalg.norm(..." because above assertion failure prevents decision function error from 
         #ever falling below specified error
-        while ((abs(self.clf.decision_function([endpoint])) > error) and (linalg.norm(endpoint-startpoint) > error)):
+        while ((abs(self.clf.decision_function([endpoint])) > error)
+                and (linalg.norm(endpoint-startpoint) > error)):
             distance = linalg.norm(endpoint-startpoint)
             unit = (endpoint - startpoint)/distance
             midpoint = startpoint + (distance/2.0)*unit
@@ -163,7 +164,7 @@ class ImportanceScoresHelper(object):
 
     def get_average_gradient_between_two_points(self, frompoint, topoint, numsteps):
         self.refcount += 1
-        if (self.refcount%1 == 0):
+        if (self.refcount%100 == 0):
                 print("Starting average gradient calculation for ", self.refcount, "th point")
         distance = linalg.norm(topoint - frompoint)
         unit = (topoint - frompoint)/distance
@@ -179,14 +180,13 @@ class ImportanceScoresHelper(object):
         print("Avg grad computed in:",round(time.time()-start,2),"s")
         return to_return
 
-    def get_feature_contribs_using_average_gradient_from_reference(self, testpoints, numsteps, calc_first_few_only=None):
+    def get_feature_contribs_using_average_gradient_from_reference(self, testpoints, reference_to_use, numsteps):
         assert (np.isfinite(testpoints).all()), "Some of the training points are not finite!"
-        frompoints = self.get_reference_points_from_closest_opposite_points(testpoints)
+        if (reference_to_use is None):
+            frompoints = self.get_reference_points_from_closest_opposite_points(testpoints)
+        else:
+            frompoints = reference_to_use
         assert (np.isfinite(frompoints).all()), "Some of the obtained reference points are not finite!"
-        if calc_first_few_only is not None:
-            print("Calculating feature contribs for only first ", calc_first_few_only, " points")
-            testpoints = testpoints[:calc_first_few_only].copy()
-            frompoints = frompoints[:calc_first_few_only].copy()
         avg_gradients = self.get_average_gradient_between_points(frompoints, testpoints, numsteps=numsteps)
         contribs = (testpoints - frompoints)*avg_gradients
         return contribs

@@ -189,4 +189,4 @@ class ImportanceScoresHelper(object):
         assert (np.isfinite(frompoints).all()), "Some of the obtained reference points are not finite!"
         avg_gradients = self.get_average_gradient_between_points(frompoints, testpoints, numsteps=numsteps)
         contribs = (testpoints - frompoints)*avg_gradients
-        return contribs
+        return contribs, avg_gradients

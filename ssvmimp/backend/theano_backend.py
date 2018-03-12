@@ -131,6 +131,74 @@ def get_interpretation_func_dynamic_filter_imp(filters):
     return batchwise_func
 
 
+def get_interpretation_func_dynamic_hyp_contribs(filters):
+
+    filters = filters.astype("float32")
+    filter_perbase_mats = (interpret.get_per_base_filter_contrib_nomismatch(
+                                 filters=filters)).astype("float32")
+
+    #filters has the shape: num_filt x len x alphabet_size
+    assert len(filters.shape)==3
+    assert filters.shape==filter_perbase_mats.shape
+    
+    #figure out the bias for exact matches to filters
+    exact_biases = -(np.sum(np.max(filters, axis=-1),axis=-1)-1)
+    #figure out the bias that allows a single mismatch to the filters
+    inexact_biases = -(np.sum(np.max(filters, axis=-1),axis=-1)-2)
+    onehot_var = T.TensorType(dtype=theano.config.floatX,
+                                    broadcastable=[False]*3)("onehot")
+    filter_grad_var = T.TensorType(
+                        dtype=theano.config.floatX,
+                        broadcastable=[False]*2)("filter_grad_var")
+    theano_filters = T.as_tensor_variable(
+                      x=filters, name="filters")
+
+    conv_result = T.nnet.conv.conv2d(
+        input=onehot_var[:,None,:,:],
+        filters=theano_filters[:,None,::-1,::-1],
+        border_mode='valid')[:,:,:,0]
+
+    filter_exact_matches = 1.0*((conv_result + exact_biases[None,:,None])
+                                > 0.0)
+    filter_inexact_matches = 1.0*((conv_result + inexact_biases[None,:,None])
+                                  > 0.0)
+
+    total_match_counts = T.sum(filter_exact_matches, axis=2)
+    per_seq_norm = T.sqrt(T.sum(T.square(total_match_counts), axis=1))
+    #pseudocount the denominator to avoid nans
+    per_match_hyp_imp = 1.0*(filter_grad_var/
+                             (per_seq_norm+0.000001)[:,None])
+    filter_inexact_hyp_imp = filter_inexact_matches*per_match_hyp_imp[:,:,None]
+
+    #get the inverse of the filter importance mats; will have the
+    #shape of inv_filter_perbase_mats is alphabet_size x num_filt x len
+    #note that the last axis is reversed deliberately
+    inv_filter_perbase_mats = filter_perbase_mats.transpose(2,0,1)[:,:,::-1]
+
+    theano_inv_filters = T.as_tensor_variable(
+                            x=inv_filter_perbase_mats, name="inv_filters")
+
+    #border_mode='full' will apply the filter wherever it partially overlaps,
+    #which is what we need to reconstruct our original input size.
+    hyp_importance_scores = T.nnet.conv.conv2d(
+        input=filter_inexact_hyp_imp[:,:,:,None],
+        filters=theano_inv_filters[:,:,::-1,None],
+        border_mode='full')[:,:,:,0] 
+    hyp_importance_scores = hyp_importance_scores.transpose(0,2,1)
+
+    func = theano.function([onehot_var, filter_grad_var],
+                            hyp_importance_scores,
+                            allow_input_downcast=True)
+
+    def batchwise_func(onehot, filter_grad, batch_size, progress_update):
+        return np.array(run_function_in_batches(
+                            func=func,
+                            input_data_list=[onehot, filter_grad],
+                            batch_size=batch_size,
+                            progress_update=progress_update))
+    return batchwise_func
+
+
 def get_interpretation_func(filters, filter_imp_mats):
 
     filters = filters.astype("float32")

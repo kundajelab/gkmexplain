@@ -124,7 +124,7 @@ def get_interpretation_func_dynamic_filter_imp(filters):
         border_mode='full')[:,:,:,0] 
     importance_scores = importance_scores.transpose(0,2,1)
 
-    func = theano.function([onehot_var, filter_imp_var],
+    func = theano.function([onehot_var, filter_grad_var],
                             importance_scores,
                             allow_input_downcast=True)
 

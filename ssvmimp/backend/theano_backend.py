@@ -85,8 +85,9 @@ def get_interpretation_func_dynamic_filter_imp(filters):
     biases = -(np.sum(np.max(filters, axis=-1),axis=-1)-1)
     onehot_var = T.TensorType(dtype=theano.config.floatX,
                                     broadcastable=[False]*3)("onehot")
-    filter_imp_var = T.TensorType(dtype=theano.config.floatX,
-                                  broadcastable=[False]*2)("filter_imp_var")
+    filter_grad_var = T.TensorType(dtype=theano.config.floatX,
+                                  broadcastable=[False]*2)("filter_grad_var")
+
     theano_filters = T.as_tensor_variable(
                       x=filters, name="filters")
     theano_biases = T.as_tensor_variable(x=biases, name="biases")
@@ -96,10 +97,15 @@ def get_interpretation_func_dynamic_filter_imp(filters):
         filters=theano_filters[:,None,::-1,::-1],
         border_mode='valid')[:,:,:,0] + biases[None,:,None])
         > 0.0)
-    match_counts = T.sum(filter_exact_matches, axis=2)
+
+    total_match_counts = T.sum(filter_exact_matches, axis=2)
+    per_seq_norm = T.sqrt(T.sum(T.square(total_match_counts), axis=1))
+    per_match_imp = (1.0*filter_grad_var)/(per_seq_norm[:,None])
+
+    #match_counts = T.sum(filter_exact_matches, axis=2)
     #pseudocount the denominator to avoid nans
-    per_match_imp = (filter_imp_var/\
-                     (match_counts + 0.01*(match_counts<1.0)))
+    #per_match_imp = (filter_imp_var/\
+    #                 (match_counts + 0.01*(match_counts<1.0)))
     filter_exact_match_imp = filter_exact_matches*per_match_imp[:,:,None]
 
     #get the inverse of the filter importance mats; will have the
@@ -122,10 +128,10 @@ def get_interpretation_func_dynamic_filter_imp(filters):
                             importance_scores,
                             allow_input_downcast=True)
 
-    def batchwise_func(onehot, filter_imp, batch_size, progress_update):
+    def batchwise_func(onehot, filter_grad, batch_size, progress_update):
         return np.array(run_function_in_batches(
                             func=func,
-                            input_data_list=[onehot, filter_imp],
+                            input_data_list=[onehot, filter_grad],
                             batch_size=batch_size,
                             progress_update=progress_update))
     return batchwise_func

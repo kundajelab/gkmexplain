@@ -1,14 +1,16 @@
 from __future__ import absolute_import, division, print_function
 import numpy as np
+from scipy import sparse
 from scipy import linalg
 from sklearn.neighbors import NearestNeighbors
+from scipy.sparse import csr_matrix
 import time
 import math
 import sys
 
 
 class ImportanceScoresHelper(object):
-    def __init__(self, svmclassifier, gamma, points, labels):
+    def __init__(self, svmclassifier, gamma, points, labels, use_csr=False):
         self.clf = svmclassifier
         self.gamma = gamma
         self.points = points
@@ -19,6 +21,8 @@ class ImportanceScoresHelper(object):
         self.negative_indices = None
         self.positive_indices = None
         self.refcount = 0
+        self.use_csr=use_csr
+        self.csr_support_vectors = csr_matrix(self.clf.support_vectors_)
 
     def initialize_nearest_neigbors(self):
         if not self.nn_initialized:
@@ -145,10 +149,27 @@ class ImportanceScoresHelper(object):
     #    return np.array([self.get_one_dimension_analytic_gradient(testpoint,j) for j in range(testpoint.shape[0])])
 
     def get_analytic_gradient(self, testpoint):
+        per_coordinate_differences = (self.csr_support_vectors
+                                      - testpoint[None, :])
+        common_term_per_sv = (self.clf.dual_coef_[0]
+                              * 2.0
+                              * self.gamma
+                              * np.exp(
+            -1.0 * self.gamma *
+            np.sum(
+                np.square(per_coordinate_differences),
+                axis=1)))
+        return np.sum(
+            per_coordinate_differences
+            * common_term_per_sv[:, None], axis=0)
+
+
+    def get_analytic_gradient_csr(self, testpoint):
         #matrix of differences of testpoint from each support vector, per
         #coordinate 
-        per_coordinate_differences = (self.clf.support_vectors_
-                                       - testpoint[None,:])
+        per_coordinate_differences = csr_matrix((self.csr_support_vectors.shape[0],self.csr_support_vectors.shape[1]))
+	for i in range(0,self.csr_support_vectors.shape[0]):
+		per_coordinate_differences[i]=self.csr_support_vectors.getrow(i)-testpoint
         #compute the vector of terms that stay the same per support vector
         common_term_per_sv = (self.clf.dual_coef_[0]
                               *2.0
@@ -158,9 +179,21 @@ class ImportanceScoresHelper(object):
                                 np.sum(
                                  np.square(per_coordinate_differences),
                                  axis=1)))
-        return np.sum(
-                per_coordinate_differences
-                *common_term_per_sv[:,None],axis=0)
+	product=csr_matrix((per_coordinate_differences.shape[1],per_coordinate_differences.shape[0]))
+	for i in range(0,per_coordinate_differences.shape[1]):
+		temp=common_term_per_sv.transpose()
+		product[i]=temp.multiply(per_coordinate_differences.getcol(i)).transpose()
+        return np.sum(product,axis=0)
+
+    def get_average_gradient_between_two_points_csr(self, frompoint, topoint, numsteps):
+        self.refcount += 1
+        if (self.refcount % 100 == 0):
+            print("Starting average gradient calculation for ", self.refcount, "th point")
+        distance = sparse.linalg.norm(topoint - frompoint)
+        unit = (topoint - frompoint) / distance
+        waypoints = np.linspace(0, distance, numsteps)
+        return np.average([self.get_analytic_gradient_csr(frompoint + waypoints[i] * unit) for i in range(numsteps)],
+                          axis=0)
 
     def get_average_gradient_between_two_points(self, frompoint, topoint, numsteps):
         self.refcount += 1
@@ -170,6 +203,16 @@ class ImportanceScoresHelper(object):
         unit = (topoint - frompoint)/distance
         waypoints = np.linspace(0, distance, numsteps)
         return np.average([self.get_analytic_gradient(frompoint + waypoints[i]*unit) for i in range(numsteps)], axis=0)
+
+    def get_average_gradient_between_points_csr(self, frompoints, topoints, numsteps):
+        start = time.time()
+        self.refcount = 0
+        to_return = np.array([self.get_average_gradient_between_two_points_csr(
+            frompoint=frompoints[i], topoint=topoints[i], numsteps=numsteps)
+            for i in range(frompoints.shape[0])])
+        print("Avg grad computed in:", round(time.time() - start, 2), "s")
+        return to_return
+
 
     def get_average_gradient_between_points(self, frompoints, topoints, numsteps):
         start = time.time()
@@ -187,6 +230,14 @@ class ImportanceScoresHelper(object):
         else:
             frompoints = reference_to_use
         assert (np.isfinite(frompoints).all()), "Some of the obtained reference points are not finite!"
-        avg_gradients = self.get_average_gradient_between_points(frompoints, testpoints, numsteps=numsteps)
-        contribs = (testpoints - frompoints)*avg_gradients
-        return contribs, avg_gradients
+        if self.use_csr:
+            frompoints_csr=csr_matrix(frompoints)
+            testpoints_csr=csr_matrix(testpoints)
+            avg_gradients = self.get_average_gradient_between_points_csr(frompoints_csr, testpoints_csr, numsteps=numsteps)
+            contribs = (testpoints_csr - frompoints_csr) * avg_gradients
+            return contribs.todense(), avg_gradients.todense()
+        else:
+            avg_gradients = self.get_average_gradient_between_points(frompoints, testpoints, numsteps=numsteps)
+            contribs = (testpoints - frompoints)*avg_gradients
+            return contribs, avg_gradients
+

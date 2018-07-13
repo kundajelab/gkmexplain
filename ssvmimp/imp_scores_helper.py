@@ -285,7 +285,7 @@ class ImportanceScoresHelper(object):
     def get_average_gradient_between_points(self, frompoints, topoints, numsteps):
         start = time.time()
         self.refcount = 0
-        to_return = np.array([self.get_average_gradient_between_two_points_optimized(
+        to_return = np.array([self.get_average_gradient_between_two_points(
             frompoint=x, topoint=y, numsteps=numsteps)
             for x, y in zip(frompoints, topoints)])
         print("Avg grad computed in:", round(time.time() - start, 2), "s")

@@ -54,7 +54,7 @@ def get_gapped_kmer_embedding_func(filters, biases):
     theano_filters = theano.tensor.as_tensor_variable(
                       x=filters, name="filters")
     theano_biases = theano.tensor.as_tensor_variable(x=biases, name="biases")
-    match_counts = T.sum(1.0*((theano.tensor.nnet.conv.conv2d(
+    match_counts = T.sum(1.0*((theano.tensor.nnet.conv2d(
                     input=onehot_var[:,None,:,:],
                     filters=theano_filters[:,None,::-1,::-1],
                     border_mode='valid')[:,:,:,0]

@@ -92,7 +92,7 @@ def get_interpretation_func_dynamic_filter_imp(filters):
                       x=filters, name="filters")
     theano_biases = T.as_tensor_variable(x=biases, name="biases")
 
-    filter_exact_matches = 1.0*((T.nnet.conv.conv2d(
+    filter_exact_matches = 1.0*((T.nnet.conv2d(
         input=onehot_var[:,None,:,:],
         filters=theano_filters[:,None,::-1,::-1],
         border_mode='valid')[:,:,:,0] + biases[None,:,None])
@@ -118,7 +118,7 @@ def get_interpretation_func_dynamic_filter_imp(filters):
 
     #border_mode='full' will apply the filter wherever it partially overlaps,
     #which is what we need to reconstruct our original input size.
-    importance_scores = T.nnet.conv.conv2d(
+    importance_scores = T.nnet.conv2d(
         input=filter_exact_match_imp[:,:,:,None],
         filters=theano_inv_filters[:,:,::-1,None],
         border_mode='full')[:,:,:,0] 
@@ -159,7 +159,7 @@ def get_interpretation_func_dynamic_hyp_contribs(filters):
     theano_filters = T.as_tensor_variable(
                       x=filters, name="filters")
 
-    conv_result = T.nnet.conv.conv2d(
+    conv_result = T.nnet.conv2d(
         input=onehot_var[:,None,:,:],
         filters=theano_filters[:,None,::-1,::-1],
         border_mode='valid')[:,:,:,0]
@@ -186,7 +186,7 @@ def get_interpretation_func_dynamic_hyp_contribs(filters):
 
     #border_mode='full' will apply the filter wherever it partially overlaps,
     #which is what we need to reconstruct our original input size.
-    hyp_importance_scores = T.nnet.conv.conv2d(
+    hyp_importance_scores = T.nnet.conv2d(
         input=filter_inexact_hyp_imp[:,:,:,None],
         filters=theano_inv_filters[:,:,::-1,None],
         border_mode='full')[:,:,:,0] 
@@ -222,7 +222,7 @@ def get_interpretation_func(filters, filter_imp_mats):
                       x=filters, name="filters")
     theano_biases = T.as_tensor_variable(x=biases, name="biases")
 
-    filter_exact_matches = 1.0*((T.nnet.conv.conv2d(
+    filter_exact_matches = 1.0*((T.nnet.conv2d(
         input=onehot_var[:,None,:,:],
         filters=theano_filters[:,None,::-1,::-1],
         border_mode='valid')[:,:,:,0] + biases[None,:,None])
@@ -245,7 +245,7 @@ def get_interpretation_func(filters, filter_imp_mats):
 
     #border_mode='full' will apply the filter wherever it partially overlaps,
     #which is what we need to reconstruct our original input size.
-    importance_scores = T.nnet.conv.conv2d(
+    importance_scores = T.nnet.conv2d(
         input=filter_exact_match_imp[:,:,:,None],
         filters=theano_inv_filters[:,:,::-1,None],
         border_mode='full')[:,:,:,0] 

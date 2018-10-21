@@ -1,4 +1,4 @@
-# Per-position importance scores for gapped kmer SVMs using Integrated Gradients
+# Per-input importance scores SVMs using Integrated Gradients
 
 Please see [https://github.com/kundajelab/igsvm/blob/master/lsgkmexplain_TALGATA.ipynb](https://github.com/kundajelab/igsvm/blob/master/lsgkmexplain_TALGATA.ipynb) and [https://github.com/kundajelab/igsvm/blob/master/lsgkmexplain_NFE2.ipynb](https://github.com/kundajelab/igsvm/blob/master/lsgkmexplain_NFE2.ipynb) for example notebooks demonstrating usage on simulated and real genomic data, respectively.
 

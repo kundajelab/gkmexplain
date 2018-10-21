@@ -25,7 +25,6 @@ class ImportanceScoresHelper(object):
         self.use_csr = use_csr
         self.csr_support_vectors = csr_matrix(self.clf.support_vectors_)
         print("Support vector shape is " + str(self.clf.support_vectors_.shape))
-        print("CSR support vector count is " + str(len(self.csr_support_vectors.nonzero()[0])))
         self.initialize_reduced_arrays()
 
     def initialize_reduced_arrays(self):

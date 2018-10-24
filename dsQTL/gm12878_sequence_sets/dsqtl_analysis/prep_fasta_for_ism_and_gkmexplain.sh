@@ -17,5 +17,7 @@ prep_fasta_func () {
 
 }
 
-prep_fasta_func 9
-prep_fasta_func 15
+#prep_fasta_func 9
+#prep_fasta_func 15
+prep_fasta_func 25
+prep_fasta_func 50

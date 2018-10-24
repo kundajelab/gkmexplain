@@ -1,0 +1,4 @@
+.nfs*
+**/*.txt
+**/*.bed
+deltasvm_script

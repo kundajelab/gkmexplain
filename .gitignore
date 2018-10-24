@@ -1,5 +1,7 @@
 **/*.gz
 **/*.fa
+**/*.fai
+**/*.2bit
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

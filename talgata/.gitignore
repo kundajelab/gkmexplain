@@ -1,3 +1,5 @@
 *.gz
 *.fa
 lsgkm
+explanation_positives.txt
+gkmexplain_imp_scores.npy

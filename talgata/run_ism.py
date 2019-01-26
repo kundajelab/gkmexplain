@@ -48,7 +48,7 @@ def run_ism(model_file_path,sequence,temp_filepath):
   
   return ism_importance_scores, ism_hyp_importance_scores
 
-input_file = "train_positives.fa"
+input_file = "test_positives.fa"
 model_file_path = "params_t3_l6_k5_d1_g2_c10_w3.model.txt"
 
 ism_imp_scores = []

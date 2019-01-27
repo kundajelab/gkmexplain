@@ -58,3 +58,26 @@ run_shap_func gkmsvm_t3_l10_k6_d3_c10_g2_t16_negset2 51 $nbg $nsamples
 run_shap_func gkmsvm_t3_l10_k6_d3_c10_g2_t16_negset3 51 $nbg $nsamples
 run_shap_func gkmsvm_t3_l10_k6_d3_c10_g2_t16_negset4 51 $nbg $nsamples
 run_shap_func gkmsvm_t3_l10_k6_d3_c10_g2_t16_negset5 51 $nbg $nsamples
+
+#sample runtime in seconds per variant...too slow...
+#tempfile tmpshap18 538.429147005
+#tempfile tmpshap22 457.31674099
+#tempfile tmpshap20 506.442214012
+#tempfile tmpshap23 481.180209875
+#tempfile tmpshap25 486.616166115
+#tempfile tmpshap29 483.115988016
+#tempfile tmpshap21 511.701988935
+#tempfile tmpshap24 501.044990063
+#tempfile tmpshap28 492.650929928
+#tempfile tmpshap30 490.272205114
+#tempfile tmpshap27 503.60407114
+#tempfile tmpshap33 499.681439161
+#tempfile tmpshap26 514.861047983
+#tempfile tmpshap36 495.08408308
+#tempfile tmpshap35 504.993518114
+#tempfile tmpshap32 516.512398005
+#tempfile tmpshap38 489.978659153
+#tempfile tmpshap34 518.840497971
+#tempfile tmpshap37 504.62121892
+#tempfile tmpshap31 529.60678196
+#tempfile tmpshap39 508.553696156

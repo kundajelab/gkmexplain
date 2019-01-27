@@ -8,8 +8,9 @@ from sklearn.metrics import roc_auc_score, average_precision_score
 method_to_saved_scores = OrderedDict([
     ('gkmexplain', 'gkmexplain_imp_scores.npy'),
     ('ism', 'ism_imp_scores.npy'),
-    ('shap2000', 'shap2000_bg20_imp_scores.npy'),
-    ('shap20000', 'shap20000_bg20_imp_scores.npy')
+    ('shap2000bg20', 'shap2000_bg20_imp_scores.npy'),
+    ('shap2000bg200', 'shap2000_bg200_imp_scores.npy'),
+    ('shap20000bg20', 'shap20000_bg20_imp_scores.npy')
 ])
 
 simdna_file = "sequences.simdata.gz"

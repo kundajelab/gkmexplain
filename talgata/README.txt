@@ -25,3 +25,19 @@
 #tempfile tmpshap397 1070.84324884
 #tempfile tmpshap398 1060.13797903
 #tempfile tmpshap399 1060.57516599
+
+#Some PER SEQUENCE runtimes for shap @ 20000 samples, bg 200:
+#tempfile tmpshap385 1120.66112399
+#tempfile tmpshap387 1108.914886
+#tempfile tmpshap389 1112.23420501
+#tempfile tmpshap388 1124.84290314
+#tempfile tmpshap391 1115.35765004
+#tempfile tmpshap390 1118.41711092
+#tempfile tmpshap392 1093.43674016
+#tempfile tmpshap393 1097.42494988
+#tempfile tmpshap394 1096.73449588
+#tempfile tmpshap395 1095.51407194
+#tempfile tmpshap396 1104.25273609
+#tempfile tmpshap398 1095.15051079
+#tempfile tmpshap397 1116.14081287
+#tempfile tmpshap399 1101.66583991

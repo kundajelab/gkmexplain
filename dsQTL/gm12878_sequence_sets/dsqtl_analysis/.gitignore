@@ -2,3 +2,5 @@
 **/*.txt
 **/*.bed
 deltasvm_script
+tmpshap*
+lsgkm

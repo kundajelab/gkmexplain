@@ -1,4 +1,4 @@
-# Explaining the predictions of gapped k-mer SVMs using Integrated Gradients
+# Fast and Accurate Interpretation of Nonlinear Gapped k-mer SVMs
 
 This repository accompanies [Gkmexplain: Fast and Accurate Interpretation of Nonlinear Gapped k-mer Support Vector Machines Using Integrated Gradients](https://www.biorxiv.org/content/early/2018/11/06/457606) by Shrikumar\*†, Prakash\* and Kundaje† (\*co-first authors †co-corresponding authors).
 

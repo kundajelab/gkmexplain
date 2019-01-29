@@ -27,3 +27,6 @@ bedtools getfasta -fi hg19.genome.fa -bed negatives_train_set.bed.gz > negatives
 bedtools getfasta -fi hg19.genome.fa -bed negatives_test_set.bed.gz > negatives_test.fa
 
 ~/lsgkm/src/gkmtrain -T 16 -w 2.88 positives_train.fa negatives_train.fa lsgkm_defaultsettings_w2p88_
+
+~/lsgkm/bin/gkmpredict -T 16 positives_test.fa lsgkm_defaultsettings_w2p88_.model.txt preds_test_positives.txt
+~/lsgkm/bin/gkmpredict -T 16 negatives_test.fa lsgkm_defaultsettings_w2p88_.model.txt preds_test_negatives.txt

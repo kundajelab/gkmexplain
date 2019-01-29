@@ -1,0 +1,9 @@
+MEME version 4
+
+ALPHABET= ACGT
+
+strands: + -
+
+Background letter frequencies (from entire human genome)
+A 0.29 C 0.21 G 0.21 T 0.29
+

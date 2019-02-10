@@ -2,6 +2,8 @@
 **/*.fa
 **/*.fai
 **/*.2bit
+**/*.DS_Store
+**/*nrkmers_scores.txt
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

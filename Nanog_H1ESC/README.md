@@ -1,11 +1,11 @@
 For a colab notebook that preps the data, trains a model, computes
 gkmexplain scores and runs TF-MoDISco, see:
-`https://github.com/kundajelab/gkmexplain/blob/master/lsgkmexplain_Nanog.ipynb`
+[https://github.com/kundajelab/gkmexplain/blob/master/lsgkmexplain_Nanog.ipynb](https://github.com/kundajelab/gkmexplain/blob/master/lsgkmexplain_Nanog.ipynb)
 
 HOMER was run with the following commands:
 
 ```
-#module load perl - run if on a system that has these modules
+#module load perl
 #module load homer
 cat positives_train.fa positives_test.fa > all_positives.fa
 cat negatives_train.fa negatives_test.fa > all_negatives.fa

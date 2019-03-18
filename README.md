@@ -1,4 +1,4 @@
-# GkmExplain Fast and Accurate Interpretation of Nonlinear Gapped k-mer Support Vector Machines
+# GkmExplain: Fast and Accurate Interpretation of Nonlinear Gapped k-mer Support Vector Machines
 
 This repository accompanies [Gkmexplain: Fast and Accurate Interpretation of Nonlinear Gapped k-mer SVMs](https://www.biorxiv.org/content/early/2018/11/06/457606) by Shrikumar\*†, Prakash\* and Kundaje† (\*co-first authors †co-corresponding authors).
 

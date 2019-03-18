@@ -1,6 +1,6 @@
 For a colab notebook that preps the data, trains a model, computes
 gkmexplain scores and runs TF-MoDISco, see:
-`https://github.com/kundajelab/gkmexplain/blob/master/lsgkmexplain_Nanog.ipynb`
+[https://github.com/kundajelab/gkmexplain/blob/master/lsgkmexplain_Nanog.ipynb](https://github.com/kundajelab/gkmexplain/blob/master/lsgkmexplain_Nanog.ipynb)
 
 HOMER was run with the following commands:
 

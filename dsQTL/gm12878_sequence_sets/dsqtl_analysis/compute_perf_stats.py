@@ -12,12 +12,15 @@ def run_me(args):
 
     preds = pos_vals+neg_vals
     true = [1 for x in pos_vals]+[-1 for x in neg_vals]
-    print("auROC:",roc_auc_score(y_true=true, y_score=preds))
-    print("auPRC:",average_precision_score(y_true=true, y_score=preds))
+    if (args.computeAuroc):
+        print(roc_auc_score(y_true=true, y_score=preds))
+    else:
+        print(average_precision_score(y_true=true, y_score=preds))
 
 if __name__=="__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("posfile")
     parser.add_argument("negfile")
+    parser.add_argument("--computeAuroc", action="store_true")
     run_me(parser.parse_args())
 

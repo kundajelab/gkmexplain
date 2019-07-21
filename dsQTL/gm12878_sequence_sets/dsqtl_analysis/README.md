@@ -14,3 +14,24 @@ To score the variants with gkmexplain or in-silico mutagenesis (ISM), we first n
 
 Once the files with the expanded flanks have been prepared, we can run ISM and gkmexplain by calling `run_ism.sh` and `run_gkmexplain.sh`. They will produce results in the `ism_out` and `gkmexplain_out` directories, respectively. The final outputs have been saved in this github repository. 
 
+To reproduce the auPRCs in Figure 8 of the main figure, run `summarize_auprcs.sh`. It gives the output: 
+
+    NegativeSet 1 GkmExplain:0.18905012613037497 ISM:0.1880813240274184 deltasvm-gkmrbf:0.18286977265514853 deltasvm-gkm:0.179178068476846
+    NegativeSet 2 GkmExplain:0.1910123884300699 ISM:0.1896758048492444 deltasvm-gkmrbf:0.18648554951967555 deltasvm-gkm:0.18565486895923847
+    NegativeSet 3 GkmExplain:0.18522736749748275 ISM:0.18432610308590425 deltasvm-gkmrbf:0.1800054628781844 deltasvm-gkm:0.17697365562496964
+    NegativeSet 4 GkmExplain:0.18697771718457107 ISM:0.18569398186553088 deltasvm-gkmrbf:0.18027608051247246 deltasvm-gkm:0.1794275915868459
+    NegativeSet 5 GkmExplain:0.19476864677663552 ISM:0.1943242668346119 deltasvm-gkmrbf:0.18733035565708475 deltasvm-gkm:0.1848268442432523
+
+
+For fun, I also averaged the results over the five folds by running the `combine_folds.sh` script in the `gkmexplain_out`, `ism_out` and `deltasvm_out` directories and compared the performance. This analysis isn't in the paper as I couldn't put any statistical confidence on it. The results are as follows:
+
+    ./compute_perf_stats.py gkmexplain_out/combined_positives.txt gkmexplain_out/combined_negatives.txt
+    0.19647080084352467 
+    ./compute_perf_stats.py ism_out/combined_positives.txt ism_out/combined_negatives.txt 
+    0.1955013882806286
+    ./compute_perf_stats.py deltasvm_out/combined_positives_gkmsvm_t3_l10_k6_d3_c10_g2_t16.txt deltasvm_out/combined_negatives_gkmsvm_t3_l10_k6_d3_c10_g2_t16.txt
+    0.18943240503469277
+    ./compute_perf_stats.py deltasvm_out/combined_positives_gkmsvm_t2_l10_k6_d3_t16.txt deltasvm_out/combined_negatives_gkmsvm_t2_l10_k6_d3_t16.txt 
+    0.18795144871293468
+
+Note that the deltaSVM authors also made lmer weights downloadable from their website, although to my knowledge they did not provide the models themselves. The weights they provided were derived through a combination of models trained on the five negative sets. The authors wrote that "when we compared deltaSVM between different training sets, we normalized weights by the standard deviation of the weight distribution, but we have reported raw weights here for simplicity. This correction typically had a small effect (<50%)." When I applied these weights to score the dsQTLs with the command `./compute_perf_stats.py deltasvm_out/positives_deltasvmpaper.txt deltasvm_out/negatives_deltasvmpaper.txt`, I got an auPRC of `0.19338305610230075`, roughly consistent with the lsgkm paper (Supplementary Figure S5 gives an auPRC of 0.190). The text of the deltaSVM papers states that the models were trained with a "word length l = 10, informative columns k = 6 and truncated filter d = 3", which are the same as the parameters used to train the gkm SVMs here, although the software used was likely the original gkm implementation rather than lsgkm. 

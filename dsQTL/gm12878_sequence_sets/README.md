@@ -39,3 +39,5 @@ This generated the files `gkmsvm_t2_l10_k6_d3_t16_x5.cvpred.txt` and `gkmsvm_t3_
     python compute_auroc.py gkmsvm_t3_l10_k6_d3_c10_g2_t16_x5.cvpred.txt
 
 This yields 0.9390508834427328 and 0.9432129964790918 respectively, confirming the advantage of the gkmrbf kernel.
+
+To perform the dsQTL analysis, follow [this README](https://github.com/kundajelab/gkmexplain/tree/master/dsQTL/gm12878_sequence_sets/dsqtl_analysis)

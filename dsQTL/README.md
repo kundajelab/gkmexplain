@@ -1,1 +1,1 @@
-To replicate the dsQTL analysis, run `get_data.sh`, which downloads and unpacks the folder `gm12878_sequence_sets`. Then follow the README at [https://github.com/kundajelab/gkmexplain/tree/master/dsQTL/gm12878_sequence_sets](https://github.com/kundajelab/gkmexplain/tree/master/dsQTL/gm12878_sequence_sets).
+To replicate the dsQTL analysis, run `get_data.sh`, which downloads and unpacks the bulky files belonging to the folder `gm12878_sequence_sets`. Then follow [this README](https://github.com/kundajelab/gkmexplain/tree/master/dsQTL/gm12878_sequence_sets).

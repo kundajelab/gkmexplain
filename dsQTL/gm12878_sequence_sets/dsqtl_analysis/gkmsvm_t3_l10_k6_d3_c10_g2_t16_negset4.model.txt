@@ -1,0 +1,1 @@
+../gkmsvm_t3_l10_k6_d3_c10_g2_t16_negset4.model.txt

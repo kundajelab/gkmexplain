@@ -3,9 +3,13 @@
 run_ism_func () {
     prefix=$1 
     flanksize=$2
+    #Make a prediction on the positive set major allele
     ~/lsgkm/bin/gkmpredict -T 16 "posmajor_"$flanksize"flank_coords.fa" $prefix.model.txt ism_out/"pos_major_"$flanksize"_"$prefix.txt
+    #Make a prediction on the positive set minor allele
     ~/lsgkm/bin/gkmpredict -T 16 "posminor_"$flanksize"flank_coords.fa" $prefix.model.txt ism_out/"pos_minor_"$flanksize"_"$prefix.txt
+    #Take the difference of the values
     paste ism_out/"pos_major_"$flanksize"_"$prefix.txt ism_out/"pos_minor_"$flanksize"_"$prefix.txt | perl -lane 'print $F[0]."\t".($F[3]-$F[1])' > ism_out/"ism_diff_pos_"$flanksize"_"$prefix.txt
+    #Repeat for the negative set
     ~/lsgkm/bin/gkmpredict -T 16 "negmajor_"$flanksize"flank_coords.fa" $prefix.model.txt ism_out/"neg_major_"$flanksize"_"$prefix.txt
     ~/lsgkm/bin/gkmpredict -T 16 "negminor_"$flanksize"flank_coords.fa" $prefix.model.txt ism_out/"neg_minor_"$flanksize"_"$prefix.txt
     paste ism_out/"neg_major_"$flanksize"_"$prefix.txt ism_out/"neg_minor_"$flanksize"_"$prefix.txt | perl -lane 'print $F[0]."\t".($F[3]-$F[1])' > ism_out/"ism_diff_neg_"$flanksize"_"$prefix.txt

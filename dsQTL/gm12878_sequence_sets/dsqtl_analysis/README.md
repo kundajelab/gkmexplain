@@ -35,3 +35,5 @@ For fun, I also averaged the results over the five folds by running the `combine
     0.18795144871293468
 
 Note that the deltaSVM authors also made lmer weights downloadable from their website, although to my knowledge they did not provide the models themselves. The weights they provided were derived through a combination of models trained on the five negative sets. When I applied these weights to score the dsQTLs with the command `./compute_perf_stats.py deltasvm_out/positives_deltasvmpaper.txt deltasvm_out/negatives_deltasvmpaper.txt`, I got an auPRC of `0.19338305610230075`, roughly consistent with the lsgkm paper (Supplementary Figure S5 gives an auPRC of 0.190). The text of the deltaSVM papers states that the models were trained with a "word length l = 10, informative columns k = 6 and truncated filter d = 3", which are the same as the parameters used to train the gkm SVMs here, although the software used was likely the original gkm implementation rather than lsgkm. 
+
+See ReproduceFigure9.ipynb for code to reproduce Figure 9 in the paper.

@@ -1,3 +1,5 @@
+This code is designed to be run in the folder `gm12878_sequence_sets`
+
 Models were trained by running the following commands; note that `-t 3` specifies the gkmrbf kernel, while `-t 2` is the standard gkm kernel. The help prompt for `gkmtrain` states that "RBF kernels (3, 5 and 6) work best with -c 10 -g 2", hence the non-default parameter setting. 
 
     #negset 1
@@ -37,3 +39,5 @@ This generated the files `gkmsvm_t2_l10_k6_d3_t16_x5.cvpred.txt` and `gkmsvm_t3_
     python compute_auroc.py gkmsvm_t3_l10_k6_d3_c10_g2_t16_x5.cvpred.txt
 
 This yields 0.9390508834427328 and 0.9432129964790918 respectively, confirming the advantage of the gkmrbf kernel.
+
+To perform the dsQTL analysis, follow [this README](https://github.com/kundajelab/gkmexplain/tree/master/dsQTL/gm12878_sequence_sets/dsqtl_analysis)

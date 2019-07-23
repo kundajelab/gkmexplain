@@ -1,5 +1,9 @@
 #!/usr/bin/env bash 
 
+#NOTE: gkmexplain is not yet multithreaded. For a speedup, you could split the dataset up
+# and run gkmexplain on the different splits in parallel. Note that gkmpredict, for making
+# predictions, does have built-in multithreading support, which is why running ISM on a
+# *single* perturbation can be faster than gkmexplain without.
 run_gkmexplain_func () {
     prefix=$1 
     flanksize=$2
